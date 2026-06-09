@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/block-protected-paths.sh",
+        "matcher": "Write|StrReplace|Delete|EditNotebook",
+        "failClosed": false
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/format-on-save.sh",
+        "matcher": "Write|StrReplace"
+      }
+    ]
+  }
+}

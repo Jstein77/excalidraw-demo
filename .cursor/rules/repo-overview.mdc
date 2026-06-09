@@ -1,0 +1,30 @@
+---
+description: Excalidraw monorepo layout and where to look for canvas-editor bugs
+alwaysApply: true
+---
+
+# Excalidraw monorepo overview
+
+This repo is a canvas-based editor (React + TypeScript + Vite). Think of it as the same class of problem as a web creative tool: document model, rendering, hit-testing, selection, undo/redo.
+
+## Layout
+
+| Path | Purpose |
+|------|---------|
+| `excalidraw-app/` | Vite app entrypoint — run with `yarn start` (http://localhost:3000) |
+| `packages/excalidraw/` | Core editor: App, elements, scene, UI components |
+| `packages/excalidraw/element/` | Element model, bounds, collision, selection helpers |
+| `packages/excalidraw/shapes.tsx` | `getElementShape()` — geometry used for hit detection |
+| `packages/utils/geometry/` | Polygon/ellipse shape builders shared by hit testing |
+| `packages/math/` | Geometry primitives (`pointRotateRads`, etc.) |
+
+## Debugging canvas interaction bugs
+
+1. Reproduce in the browser at `http://localhost:3000`
+2. Trace pointer → `App.getElementAtPosition` → `hitElement` → `hitElementItself` + `getElementShape`
+3. For rotation/selection issues, inspect `packages/utils/geometry/shape.ts` (`getPolygonShape`) and `packages/excalidraw/element/collision.ts`
+4. Run targeted tests before opening a PR
+
+## Node version
+
+Use Node 22 (`nvm use` reads `.nvmrc`).

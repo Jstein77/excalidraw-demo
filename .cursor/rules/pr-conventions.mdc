@@ -1,0 +1,29 @@
+---
+description: Commit and PR standards for this team
+alwaysApply: true
+---
+
+# PR & commit conventions
+
+## Commits
+
+- Use conventional prefixes: `fix:`, `refactor:`, `test:`, `chore:`, `docs:`
+- One logical change per commit when possible
+
+## Pull requests
+
+Every PR body must include:
+
+1. **Root cause** — what was wrong and why (1–2 sentences)
+2. **Fix** — what changed
+3. **Test plan** — checklist with concrete steps (include browser repro for UI bugs)
+
+Example test plan item for selection bugs:
+
+- [ ] Draw rectangle, rotate ~45°, click center — element selects
+- [ ] Unrotated rectangle still selects
+- [ ] `yarn test packages/utils/geometry --watch=false` passes
+
+## Branch naming
+
+`fix/<short-description>` or `bugfix/<linear-id>-<short-description>`
