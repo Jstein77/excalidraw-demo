@@ -35,7 +35,7 @@ The rectangle is selected; selection handles appear aligned with the rotated sha
 Click does not select the shape. User must marquee-select or click near the unrotated axis-aligned bounding box edge.
 
 ## Notes
-Likely related to hit-test polygon vs visual rotation. Suspect `getPolygonShape` / collision geometry. See `packages/utils/geometry/shape.ts` and `packages/excalidraw/shapes.tsx`.
+Likely related to hit-test polygon vs visual rotation. Inspect `getPolygonShape()` in `packages/utils/geometry/shape.ts` — suspect wrong rotation pivot for rectanguloid elements (origin vs center). See also `packages/excalidraw/shapes.tsx`.
 
 ## Acceptance criteria
 - [ ] Rotated filled rectangles select on click anywhere inside the visible shape
