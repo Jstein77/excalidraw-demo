@@ -189,7 +189,8 @@ const intersectRectanguloidWithLineSegment = (
     element.y + element.height / 2,
   );
   // To emulate a rotated rectangle we rotate the point in the inverse angle
-  // instead. It's all the same distance-wise.
+  // instead. It's all the same distance-wise. Polygon hit shapes use the
+  // matching scene-space rotation in getPolygonShape.
   const rotatedA = pointRotateRads<GlobalPoint>(
     l[0],
     center,
