@@ -20,7 +20,7 @@ Demo-start branch: `main` (seeded bug + `.cursor/` config, no regression test ye
 ## 20-minute run of show
 
 | Min | Beat | Action | Narration (technical depth) |
-|-----|------|--------|------------------------------|
+| --- | --- | --- | --- |
 | 0–1 | Frame | "Same class of problem as a web canvas editor — Excalidraw stand-in for Adobe web editors." | Creative-tool domain: hit-testing, rotation, document model |
 | 1–2 | Context in | "Pull the Linear ticket" via MCP | MCP = tools/resources exposed to model; agent reads schema, decides when to call |
 | 2–4 | Reproduce | Agent opens browser, reproduces bug (see `.demo/browser-repro-coords.md`) | Browser automation = verifiable feedback loop; not just codegen |
@@ -29,7 +29,7 @@ Demo-start branch: `main` (seeded bug + `.cursor/` config, no regression test ye
 | 7 | **Hook demo** | Ask agent to edit `packages/excalidraw/locales/en.json` | `preToolUse` hook **denies** deterministically — rules ask, hooks enforce |
 | 8–12 | Fix + test | Agent fixes `rotationOrigin` in `getPolygonShape`, adds `rotation-selection.test.ts` | Model choice: thinking model for root cause; fast model ok for test boilerplate |
 | 12–14 | Verify | `yarn test packages/utils/geometry/rotation-selection.test.ts --watch=false` + browser re-test | Agents need verifiable feedback loops — invest in testability |
-| 14–17 | Ship | Agent commits, opens PR with root cause + test plan (per `pr-conventions.mdc`) | |
+| 14–17 | Ship | Agent commits, opens PR with root cause + test plan (per `pr-conventions.mdc`) |  |
 | 17–20 | BugBot | Show PR review comment | Layered trust: rules → hooks → CI/BugBot |
 
 ---
@@ -64,7 +64,7 @@ Do NOT edit files under packages/excalidraw/locales/ or firebase-project/ — te
 ## Q&A prep
 
 | Question | Answer |
-|----------|--------|
+| --- | --- |
 | Context window / fresh chat? | Long investigations: start fresh chat when context degrades; @-mention key files |
 | Rules vs hooks? | Rules = probabilistic instructions in system prompt; hooks = deterministic code at lifecycle events |
 | Data privacy? | Privacy mode / enterprise controls — no code stored for training when enabled |
