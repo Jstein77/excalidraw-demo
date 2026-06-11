@@ -119,9 +119,8 @@ export const getPolygonShape = <Point extends GlobalPoint | LocalPoint>(
   const cy = y + height / 2;
 
   const center: Point = pointFrom(cx, cy);
-  // Rectanguloid hit shapes rotate around element origin (matches render pivot)
-  const rotationOrigin: Point =
-    element.type === "diamond" ? center : pointFrom(x, y);
+  // Rectanguloid hit shapes rotate around element center (matches render pivot)
+  const rotationOrigin: Point = center;
 
   let data: Polygon<Point>;
 
