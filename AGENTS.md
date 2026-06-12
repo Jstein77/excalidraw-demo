@@ -4,7 +4,7 @@
 
 This repository supports a **Cursor Field Engineer 201 Deep Dive** presentation: a 20-minute advanced session for technical evaluators (e.g. Adobe pilot users) who already know Cursor basics.
 
-The live demo walks through an end-to-end bug fix on Excalidraw (rotated rectangle selection / hit-testing) using rules, hooks, MCP (Linear), browser verification, tests, and PR conventions. Full briefing, session format, evaluation criteria, and the paste-in agent prompt live in `.cursor/rules/field-engineer-demo.mdc` and `DEMO-RUNBOOK.md`.
+The live demo walks through an end-to-end bug fix on Excalidraw (rotated rectangle selection / hit-testing) using rules, hooks, MCP (Linear), browser verification, tests, and PR conventions. Full briefing, session format, evaluation criteria, and the paste-in agent prompt live in `.cursor/rules/field-engineer-demo.mdc`; Linear issue, browser repro, and BugBot setup templates in `.demo/`.
 
 ## Cursor Cloud specific instructions
 
