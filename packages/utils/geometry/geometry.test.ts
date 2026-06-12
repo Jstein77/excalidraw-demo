@@ -4,16 +4,24 @@ import type {
   Polygon,
   Radians,
 } from "@excalidraw/math";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
 import {
   pointFrom,
   lineSegment,
   polygon,
+  pointRotateRads,
   pointOnLineSegment,
   pointOnPolygon,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import { isPointInShape } from "../collision";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -66,6 +74,46 @@ describe("point and polygon", () => {
     );
     expect(polygonIncludesPoint(pointFrom(1, 1), poly)).toBe(true);
     expect(polygonIncludesPoint(pointFrom(3, 3), poly)).toBe(false);
+  });
+});
+
+describe("rectangle polygon shape", () => {
+  const rectangle = {
+    type: "rectangle",
+    x: 10,
+    y: 20,
+    width: 200,
+    height: 120,
+  } as ExcalidrawRectangleElement;
+
+  it("includes visible interior points when rotated", () => {
+    const angle = (Math.PI / 4) as Radians;
+    const rotatedRectangle = {
+      ...rectangle,
+      angle,
+    };
+
+    const shape = getPolygonShape<GlobalPoint>(rotatedRectangle);
+    const center = pointFrom(110, 80);
+    const visibleInteriorPoint = pointRotateRads(
+      pointFrom(160, 80),
+      center,
+      angle,
+    );
+
+    expect(isPointInShape(center, shape)).toBe(true);
+    expect(isPointInShape(visibleInteriorPoint, shape)).toBe(true);
+    expect(isPointInShape(pointFrom(10, 10), shape)).toBe(false);
+  });
+
+  it("preserves unrotated rectangle hit behavior", () => {
+    const shape = getPolygonShape<GlobalPoint>({
+      ...rectangle,
+      angle: 0 as Radians,
+    });
+
+    expect(isPointInShape(pointFrom(110, 80), shape)).toBe(true);
+    expect(isPointInShape(pointFrom(10, 10), shape)).toBe(false);
   });
 });
 
