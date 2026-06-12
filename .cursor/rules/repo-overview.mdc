@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Excalidraw monorepo overview
 
-This repo is a **Cursor Field Engineer 201 demo** workspace: Excalidraw stands in for Adobe-style web canvas editors. Session goals, evaluation criteria, and the live agent prompt are in `.cursor/rules/field-engineer-demo.mdc`; presenter runbook in `DEMO-RUNBOOK.md`.
+This repo is a **Cursor Field Engineer 201 demo** workspace: Excalidraw stands in for Adobe-style web canvas editors. Session goals, evaluation criteria, and the live agent prompt are in `.cursor/rules/field-engineer-demo.mdc`; setup templates in `.demo/`.
 
 Technically, this is a canvas-based editor (React + TypeScript + Vite). Think of it as the same class of problem as a web creative tool: document model, rendering, hit-testing, selection, undo/redo.
 
