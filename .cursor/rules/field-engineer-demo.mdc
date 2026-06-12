@@ -1,0 +1,67 @@
+---
+description: Cursor Field Engineer 201 demo prep — session goals, evaluation criteria, and live workflow
+alwaysApply: true
+---
+
+# Field Engineer demo context
+
+This repository prepares a **Cursor 201 Deep Dive** presentation for the Cursor Solutions Team Field Engineer interview process. The audience is a smaller, technical group (e.g. Adobe pilot users) who already know Cursor basics and want advanced workflows, tips, and tricks.
+
+**Live runbook (presenter notes):** `DEMO-RUNBOOK.md`  
+**Demo artifacts:** `.demo/` (Linear issue template, browser repro coords, BugBot setup)
+
+## Objective
+
+Deliver a 20-minute follow-up after a successful 101-level trial. Demonstrate technical depth, advanced capabilities, and trusted-advisor positioning — how AI coding tools should be used at scale in modern engineering organizations. Use slides, live demo, or any mix that best teaches technical workflows.
+
+## Goals
+
+- **Cursor 201** — Advanced topics or an end-to-end workflow; depth over breadth.
+- **Workflow design** — Realistic engineering problem solved with Cursor end-to-end (rules, commands, MCP, hooks, browser automation).
+- **Thought leadership** — Strategies and frameworks for how teams should use AI to build better and faster.
+- **New “aha!” moments** — Creative leverage beyond feature explanations.
+
+**Avoid:** Re-teaching Cursor 101 or speaking generically about AI without hands-on application.
+
+## Evaluation criteria
+
+- Advanced platform knowledge (depth in a few areas beats surface coverage of many)
+- Workflow design thinking (clear, effective workflows for real team value)
+- Leadership and coaching (teach others how to think about AI coding tools)
+- Technical depth (models, context windows, memory, tool selection, Cursor mechanics)
+
+## Session format
+
+| Segment | Duration | Focus |
+|---------|----------|--------|
+| Live presentation & deep dive | 20 min | Present to the technical pilot group; include at least one live advanced workflow walkthrough. Conversational — pause, ask questions, check in with the “customer.” |
+| Technical Q&A | 5 min | Advanced questions, objections, “how do I do X?” from power users |
+| Discussion | 5 min | Role of Field Engineering in AI tooling; how AI reshapes software development teams |
+
+## Demo workflow (this repo)
+
+Excalidraw stands in for Adobe-style web canvas editors (hit-testing, rotation, document model). The live walkthrough fixes a seeded rotated-rectangle selection bug using:
+
+- **Linear MCP** — fetch issue context
+- **Browser automation** — reproduce and verify
+- **Rules** — `.cursor/rules/` (e.g. `element-conventions.mdc`, `pr-conventions.mdc`)
+- **Hooks** — `.cursor/hooks/` (e.g. block protected paths)
+- **Skills** — `.cursor/skills/verify-canvas-interaction/`
+- **BugBot** — PR review layer
+
+See `DEMO-RUNBOOK.md` for minute-by-minute beats, root-cause steering notes, and Q&A prep.
+
+## Live demo agent prompt
+
+Paste this to start the live walkthrough:
+
+```
+We have a Linear bug report about rotated rectangles not selecting on click.
+1. Fetch the Linear issue via MCP for full repro steps.
+2. Start the dev server if needed and reproduce in the browser — screenshot the failure.
+3. Find root cause in the hit-testing pipeline and fix it.
+4. Add a Vitest regression test under packages/utils/geometry/ per project rules.
+5. Run the targeted test suite and re-verify in the browser.
+6. Open a PR with root cause and test plan.
+Do NOT edit files under packages/excalidraw/locales/ or firebase-project/ — team policy blocks this.
+```
