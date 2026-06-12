@@ -7,7 +7,6 @@ alwaysApply: true
 
 This repository prepares a **Cursor 201 Deep Dive** presentation for the Cursor Solutions Team Field Engineer interview process. The audience is a smaller, technical group (e.g. Adobe pilot users) who already know Cursor basics and want advanced workflows, tips, and tricks.
 
-**Live runbook (presenter notes):** `DEMO-RUNBOOK.md`  
 **Demo artifacts:** `.demo/` (Linear issue template, browser repro coords, BugBot setup)
 
 ## Objective
