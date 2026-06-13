@@ -1,0 +1,18 @@
+{
+  "name": "excalidraw-demo-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "canvas-verify": "tsx run-canvas-verify.ts"
+  },
+  "dependencies": {
+    "@cursor/sdk": "^1.0.10"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
