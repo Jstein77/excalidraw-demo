@@ -1,0 +1,4 @@
+{
+  "install": "source ~/.nvm/nvm.sh 2>/dev/null || true; nvm use 2>/dev/null || true; yarn install --frozen-lockfile",
+  "start": "bash .cursor/cloud-start.sh"
+}
