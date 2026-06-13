@@ -80,7 +80,7 @@ Linear → triage → Slack 🔧 → fix proposal → draft PR
 | --- | --- |
 | `Missing CURSOR_API_KEY` | Add repo secret |
 | `Resource not accessible by integration` on `gh pr comment` | Add `GH_TOKEN` Runtime Secret (operator PAT); ensure `.cursor/environment.json` is on the agent branch |
-| `Failed to resolve PR head ref` | Set `PR_HEAD_REF` or ensure `gh` is on PATH (workflow installs via `cli/gh-action`) |
+| `Failed to resolve PR head ref` | Set `PR_HEAD_REF` or ensure `GH_TOKEN` is set (`gh` is pre-installed on `ubuntu-latest` runners) |
 | Green check but no GIF | Should not happen — PASS requires GIF + comment per prompt |
 | Red check, agent finished | Look for `CANVAS_VERIFY_RESULT=FAIL` or missing signal in Actions log |
 | Fork PRs | `CURSOR_API_KEY` not available to fork workflows (by design) |
