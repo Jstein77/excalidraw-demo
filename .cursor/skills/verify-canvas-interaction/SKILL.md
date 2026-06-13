@@ -50,8 +50,11 @@ Combine the step screenshots into a single recording (GIF or MP4) and attach it 
 ```bash
 # screenshots named step-01.png, step-02.png, ... in order
 ffmpeg -framerate 1 -pattern_type glob -i 'step-*.png' -vf "scale=1280:-2" verification.mp4
-# or a GIF:
-ffmpeg -framerate 1 -pattern_type glob -i 'step-*.png' -vf "scale=960:-2" verification.gif
+# GIF — use palettegen/paletteuse (single -vf scale=… produces washed-out/yellow colors)
+ffmpeg -y -framerate 1 -pattern_type glob -i 'step-*.png' \
+  -vf "palettegen=stats_mode=full:max_colors=256" -update 1 -frames:v 1 palette.png
+ffmpeg -y -framerate 1 -pattern_type glob -i 'step-*.png' -i palette.png \
+  -lavfi "[0:v][1:v]paletteuse=dither=sierra2_4a" -loop 0 verification.gif
 ```
 
 If `ffmpeg` is unavailable, attach the ordered screenshots individually instead.
