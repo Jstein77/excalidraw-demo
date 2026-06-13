@@ -22,7 +22,8 @@ Complements BugBot (code review) with behavioral acceptance testing.
 
 1. **Repository secret:** add `CURSOR_API_KEY` (team service account or user key with repo access).
 2. **Cursor GitHub integration:** Cloud Agent must be able to push to PR branches and comment (same as [fix-proposal automation](./FIX-PROPOSAL-AUTOMATION.md)).
-3. **Workflow file:** copy [`.demo/workflows/canvas-ui-verify.yml`](./workflows/canvas-ui-verify.yml) to `.github/workflows/` if not already present (agent policy may block direct `.github/` edits).
+3. **Cloud Agent PAT for PR comments:** add a fine-grained GitHub PAT as **Runtime Secret** `GH_TOKEN` in [Cursor Dashboard → Cloud Agents → Secrets](https://cursor.com/dashboard/cloud-agents) (Issues + Pull requests read/write on this repo). Repo [`.cursor/environment.json`](../.cursor/environment.json) runs [`.cursor/cloud-start.sh`](../.cursor/cloud-start.sh) on startup to verify `GH_TOKEN` is your PAT, not the Cursor `ghs_…` integration token.
+4. **Workflow file:** copy [`.demo/workflows/canvas-ui-verify.yml`](./workflows/canvas-ui-verify.yml) to `.github/workflows/` if not already present (agent policy may block direct `.github/` edits).
 
 ## Triggers
 
@@ -78,6 +79,7 @@ Linear → triage → Slack 🔧 → fix proposal → draft PR
 | Issue | Fix |
 | --- | --- |
 | `Missing CURSOR_API_KEY` | Add repo secret |
+| `Resource not accessible by integration` on `gh pr comment` | Add `GH_TOKEN` Runtime Secret (operator PAT); ensure `.cursor/environment.json` is on the agent branch |
 | `Failed to resolve PR head ref` | Set `PR_HEAD_REF` or ensure `GH_TOKEN` is set (`gh` is pre-installed on `ubuntu-latest` runners) |
 | Green check but no GIF | Should not happen — PASS requires GIF + comment per prompt |
 | Red check, agent finished | Look for `CANVAS_VERIFY_RESULT=FAIL` or missing signal in Actions log |

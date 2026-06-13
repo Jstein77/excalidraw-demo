@@ -8,7 +8,9 @@ The live demo walks through an end-to-end bug fix on Excalidraw (rotated rectang
 
 ## Cursor Cloud specific instructions
 
-Excalidraw is a Yarn (classic, v1) workspaces monorepo. Node 22 is required (`.nvmrc`). Dependencies are installed automatically on startup via the update script (`yarn install`).
+Excalidraw is a Yarn (classic, v1) workspaces monorepo. Node 22 is required (`.nvmrc`). Dependencies are installed automatically on startup via `.cursor/environment.json` (`yarn install --frozen-lockfile`).
+
+For canvas UI verify agents that post PR comments, add Runtime Secret `GH_TOKEN` (fine-grained PAT) in Cursor Dashboard → Cloud Agents → Secrets; `.cursor/cloud-start.sh` warns if it is missing or still the Cursor `ghs_…` integration token.
 
 ### Services
 
