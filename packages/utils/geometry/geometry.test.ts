@@ -13,7 +13,13 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import { API } from "@excalidraw/excalidraw/tests/helpers/api";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -66,6 +72,48 @@ describe("point and polygon", () => {
     );
     expect(polygonIncludesPoint(pointFrom(1, 1), poly)).toBe(true);
     expect(polygonIncludesPoint(pointFrom(3, 3), poly)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  it("rotates rectangle hit polygons around the element center", () => {
+    const rectangle = API.createElement({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 120,
+      angle: (Math.PI / 4) as Radians,
+    });
+
+    const shape = getPolygonShape<GlobalPoint>(rectangle);
+
+    expect(
+      polygonIncludesPoint(
+        pointFrom(200, 160),
+        shape.data as Polygon<GlobalPoint>,
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps unrotated rectangle centers inside the hit polygon", () => {
+    const rectangle = API.createElement({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 120,
+      angle: 0 as Radians,
+    });
+
+    const shape = getPolygonShape<GlobalPoint>(rectangle);
+
+    expect(
+      polygonIncludesPoint(
+        pointFrom(200, 160),
+        shape.data as Polygon<GlobalPoint>,
+      ),
+    ).toBe(true);
   });
 });
 
