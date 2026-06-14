@@ -8,17 +8,28 @@ import {
   pointFrom,
   lineSegment,
   polygon,
+  pointRotateRads,
   pointOnLineSegment,
   pointOnPolygon,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
+import type {
+  ExcalidrawDiamondElement,
+  ExcalidrawFrameElement,
+  ExcalidrawRectangleElement,
+} from "@excalidraw/excalidraw/element/types";
 import {
   getPolygonShape,
   pointInEllipse,
   pointOnEllipse,
   type Ellipse,
 } from "./shape";
+
+const expectPointCloseTo = (point: GlobalPoint, expected: GlobalPoint) => {
+  expect(point[0]).toBeCloseTo(expected[0]);
+  expect(point[1]).toBeCloseTo(expected[1]);
+};
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -74,6 +85,109 @@ describe("point and polygon", () => {
   });
 });
 
+describe("element polygons", () => {
+  const rectangle = {
+    type: "rectangle",
+    x: 10,
+    y: 20,
+    width: 200,
+    height: 100,
+    angle: (Math.PI / 4) as Radians,
+  } as ExcalidrawRectangleElement;
+
+  it("rotates rectangle hit polygons around the element center", () => {
+    const center = pointFrom<GlobalPoint>(
+      rectangle.x + rectangle.width / 2,
+      rectangle.y + rectangle.height / 2,
+    );
+    const shape = getPolygonShape<GlobalPoint>(rectangle);
+
+    expect(shape.type).toBe("polygon");
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
+    expect(polygonIncludesPoint(pointFrom(20, 30), shape.data)).toBe(false);
+
+    [
+      pointFrom<GlobalPoint>(rectangle.x, rectangle.y),
+      pointFrom<GlobalPoint>(rectangle.x + rectangle.width, rectangle.y),
+      pointFrom<GlobalPoint>(
+        rectangle.x + rectangle.width,
+        rectangle.y + rectangle.height,
+      ),
+      pointFrom<GlobalPoint>(rectangle.x, rectangle.y + rectangle.height),
+    ].forEach((point, index) => {
+      expectPointCloseTo(
+        shape.data[index],
+        pointRotateRads(point, center, rectangle.angle),
+      );
+    });
+  });
+
+  it("keeps unrotated rectangle hit polygons on element bounds", () => {
+    const shape = getPolygonShape<GlobalPoint>({
+      ...rectangle,
+      angle: 0 as Radians,
+    });
+
+    expect(shape.type).toBe("polygon");
+    expect(shape.data).toEqual([
+      pointFrom(rectangle.x, rectangle.y),
+      pointFrom(rectangle.x + rectangle.width, rectangle.y),
+      pointFrom(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
+      pointFrom(rectangle.x, rectangle.y + rectangle.height),
+    ]);
+  });
+
+  it("preserves diamond center-pivot polygons", () => {
+    const diamond = {
+      ...rectangle,
+      type: "diamond",
+    } as ExcalidrawDiamondElement;
+    const center = pointFrom<GlobalPoint>(
+      diamond.x + diamond.width / 2,
+      diamond.y + diamond.height / 2,
+    );
+    const shape = getPolygonShape<GlobalPoint>(diamond);
+
+    expect(shape.type).toBe("polygon");
+    [
+      pointFrom<GlobalPoint>(diamond.x + diamond.width / 2, diamond.y),
+      pointFrom<GlobalPoint>(
+        diamond.x + diamond.width,
+        diamond.y + diamond.height / 2,
+      ),
+      pointFrom<GlobalPoint>(
+        diamond.x + diamond.width / 2,
+        diamond.y + diamond.height,
+      ),
+      pointFrom<GlobalPoint>(diamond.x, diamond.y + diamond.height / 2),
+    ].forEach((point, index) => {
+      expectPointCloseTo(
+        shape.data[index],
+        pointRotateRads(point, center, diamond.angle),
+      );
+    });
+  });
+
+  it("uses center-pivot polygons for other rectanguloid elements", () => {
+    const frame = {
+      ...rectangle,
+      type: "frame",
+    } as ExcalidrawFrameElement;
+    const center = pointFrom<GlobalPoint>(
+      frame.x + frame.width / 2,
+      frame.y + frame.height / 2,
+    );
+    const shape = getPolygonShape<GlobalPoint>(frame);
+
+    expect(shape.type).toBe("polygon");
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
+    expectPointCloseTo(
+      shape.data[0],
+      pointRotateRads(pointFrom(frame.x, frame.y), center, frame.angle),
+    );
+  });
+});
+
 describe("point and ellipse", () => {
   const ellipse: Ellipse<GlobalPoint> = {
     center: pointFrom(0, 0),
@@ -122,47 +236,6 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
-  });
-});
-
-describe("getPolygonShape", () => {
-  const makeRectangle = (
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    angle: Radians,
-  ) =>
-    ({
-      type: "rectangle",
-      x,
-      y,
-      width,
-      height,
-      angle,
-    } as Parameters<typeof getPolygonShape>[0]);
-
-  it("rotated rectangle hit polygon includes visual center", () => {
-    const element = makeRectangle(0, 0, 100, 100, (Math.PI / 4) as Radians);
-    const { data: poly } = getPolygonShape(element);
-    const center = pointFrom(50, 50);
-
-    expect(polygonIncludesPoint(center, poly)).toBe(true);
-  });
-
-  it("rotated rectangle hit polygon excludes stale-origin false positive", () => {
-    const element = makeRectangle(0, 0, 100, 100, (Math.PI / 4) as Radians);
-    const { data: poly } = getPolygonShape(element);
-    const staleOriginFalsePositive = pointFrom(10, 10);
-
-    expect(polygonIncludesPoint(staleOriginFalsePositive, poly)).toBe(false);
-  });
-
-  it("unrotated rectangle hit polygon includes center", () => {
-    const element = makeRectangle(0, 0, 100, 100, 0 as Radians);
-    const { data: poly } = getPolygonShape(element);
-
-    expect(polygonIncludesPoint(pointFrom(50, 50), poly)).toBe(true);
   });
 });
 
