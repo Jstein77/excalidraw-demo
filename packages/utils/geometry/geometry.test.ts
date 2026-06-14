@@ -10,10 +10,20 @@ import {
   polygon,
   pointOnLineSegment,
   pointOnPolygon,
+  pointRotateRads,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type {
+  ExcalidrawDiamondElement,
+  ExcalidrawRectangleElement,
+} from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -117,6 +127,87 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const rect = {
+    type: "rectangle",
+    x: 100,
+    y: 50,
+    width: 200,
+    height: 120,
+    angle: (Math.PI / 4) as Radians,
+  } as ExcalidrawRectangleElement;
+
+  const visualCenter = pointFrom(200, 110);
+
+  it("rotated non-origin rectangle contains its visual center", () => {
+    const shape = getPolygonShape<GlobalPoint>(rect);
+    expect(shape.type).toBe("polygon");
+    if (shape.type === "polygon") {
+      expect(polygonIncludesPoint(visualCenter, shape.data)).toBe(true);
+    }
+  });
+
+  it("unrotated rectangle contains its visual center", () => {
+    const shape = getPolygonShape<GlobalPoint>({
+      ...rect,
+      angle: 0 as Radians,
+    });
+    expect(shape.type).toBe("polygon");
+    if (shape.type === "polygon") {
+      expect(polygonIncludesPoint(visualCenter, shape.data)).toBe(true);
+    }
+  });
+
+  it("rejects points only inside the old top-left-pivot polygon", () => {
+    const { x, y, width, height, angle } = rect;
+    const topLeftPivot = pointFrom(x, y);
+    const oldTopLeftPivotPolygon = polygon(
+      pointRotateRads(pointFrom(x, y), topLeftPivot, angle),
+      pointRotateRads(pointFrom(x + width, y), topLeftPivot, angle),
+      pointRotateRads(pointFrom(x + width, y + height), topLeftPivot, angle),
+      pointRotateRads(pointFrom(x, y + height), topLeftPivot, angle),
+    );
+    // Offset toward the old anchor; inside the buggy shape, outside center-pivot.
+    const falsePositive = pointFrom(140, 215);
+    expect(polygonIncludesPoint(falsePositive, oldTopLeftPivotPolygon)).toBe(
+      true,
+    );
+
+    const shape = getPolygonShape<GlobalPoint>(rect);
+    expect(shape.type).toBe("polygon");
+    if (shape.type === "polygon") {
+      expect(polygonIncludesPoint(falsePositive, shape.data)).toBe(false);
+    }
+  });
+
+  it("negative rotation angle contains visual center for non-square rectangle", () => {
+    const shape = getPolygonShape<GlobalPoint>({
+      ...rect,
+      angle: (-Math.PI / 4) as Radians,
+    });
+    expect(shape.type).toBe("polygon");
+    if (shape.type === "polygon") {
+      expect(polygonIncludesPoint(visualCenter, shape.data)).toBe(true);
+    }
+  });
+
+  it("rotated diamond contains its visual center", () => {
+    const diamond = {
+      type: "diamond",
+      x: 100,
+      y: 50,
+      width: 200,
+      height: 120,
+      angle: (Math.PI / 4) as Radians,
+    } as ExcalidrawDiamondElement;
+    const shape = getPolygonShape<GlobalPoint>(diamond);
+    expect(shape.type).toBe("polygon");
+    if (shape.type === "polygon") {
+      expect(polygonIncludesPoint(visualCenter, shape.data)).toBe(true);
+    }
   });
 });
 
