@@ -13,7 +13,14 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import { isPointInShape } from "../collision";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -66,6 +73,30 @@ describe("point and polygon", () => {
     );
     expect(polygonIncludesPoint(pointFrom(1, 1), poly)).toBe(true);
     expect(polygonIncludesPoint(pointFrom(3, 3), poly)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const rectangle = (angle: Radians) =>
+    ({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      angle,
+    } as ExcalidrawRectangleElement);
+
+  it("keeps a rotated rectangle center inside its hit polygon", () => {
+    const shape = getPolygonShape(rectangle((Math.PI / 4) as Radians));
+
+    expect(isPointInShape(pointFrom(200, 150), shape)).toBe(true);
+  });
+
+  it("keeps an unrotated rectangle center inside its hit polygon", () => {
+    const shape = getPolygonShape(rectangle(0 as Radians));
+
+    expect(isPointInShape(pointFrom(200, 150), shape)).toBe(true);
   });
 });
 
