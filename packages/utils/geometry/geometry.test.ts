@@ -63,7 +63,7 @@ describe("getPolygonShape", () => {
       pointRotateRads(pointFrom(x, y + height), center, angle),
     ];
 
-    expect(poly).toEqual(expectedCorners);
+    expect(poly).toEqual([...expectedCorners, expectedCorners[0]]);
   });
 });
 
