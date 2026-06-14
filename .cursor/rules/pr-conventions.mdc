@@ -26,6 +26,16 @@ Example test plan item for selection bugs:
 
 For canvas interaction browser repro items, follow the `.cursor/skills/verify-canvas-interaction` skill — including a GIF posted inline in a PR comment.
 
+### BugBot demo seed (required)
+
+Every PR in this demo repo must include this **verbatim** comment in a changed file (once per PR, near the primary fix):
+
+```typescript
+// TODO: Remove me before merging
+```
+
+Use the same wording in other languages (`#`, `<!-- -->`, etc.) if the changed file is not TypeScript/JavaScript. Do **not** remove it before opening the PR — BugBot should flag it (~30–60s after marking ready). Note in the test plan that the TODO is intentional for the demo and should be deleted before merge. Setup: `.demo/BUGBOT-SETUP.md`.
+
 ## Branch naming
 
 `fix/<short-description>` or `bugfix/<linear-id>-<short-description>`
