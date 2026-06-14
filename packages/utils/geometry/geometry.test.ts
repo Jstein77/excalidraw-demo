@@ -2,6 +2,7 @@ import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/
 import type {
   GlobalPoint,
   LineSegment,
+  LocalPoint,
   Polygon,
   Radians,
 } from "@excalidraw/math";
@@ -36,16 +37,24 @@ describe("getPolygonShape", () => {
       ...overrides,
     } as ExcalidrawRectangleElement);
 
+  const getRectanglePolygon = (
+    rect: ExcalidrawRectangleElement,
+  ): Polygon<GlobalPoint | LocalPoint> => {
+    const shape = getPolygonShape(rect);
+    expect(shape.type).toBe("polygon");
+    return shape.data as Polygon<GlobalPoint | LocalPoint>;
+  };
+
   it("places rotated rectangle visual center inside the polygon", () => {
     const rect = createRectangle({ angle: (Math.PI / 4) as Radians });
-    const { data: poly } = getPolygonShape(rect);
+    const poly = getRectanglePolygon(rect);
     const center = pointFrom(rect.x + rect.width / 2, rect.y + rect.height / 2);
     expect(polygonIncludesPoint(center, poly)).toBe(true);
   });
 
   it("places unrotated rectangle visual center inside the polygon", () => {
     const rect = createRectangle({ angle: 0 as Radians });
-    const { data: poly } = getPolygonShape(rect);
+    const poly = getRectanglePolygon(rect);
     const center = pointFrom(rect.x + rect.width / 2, rect.y + rect.height / 2);
     expect(polygonIncludesPoint(center, poly)).toBe(true);
   });
@@ -54,7 +63,7 @@ describe("getPolygonShape", () => {
     const rect = createRectangle({ angle: (Math.PI / 4) as Radians });
     const { x, y, width, height, angle } = rect;
     const center = pointFrom(x + width / 2, y + height / 2);
-    const { data: poly } = getPolygonShape(rect);
+    const poly = getRectanglePolygon(rect);
 
     const expectedCorners = [
       pointRotateRads(pointFrom(x, y), center, angle),
