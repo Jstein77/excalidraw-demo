@@ -13,7 +13,12 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -117,6 +122,47 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const makeRectangle = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians,
+  ) =>
+    ({
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as Parameters<typeof getPolygonShape>[0]);
+
+  it("rotated rectangle hit polygon includes visual center", () => {
+    const element = makeRectangle(0, 0, 100, 100, (Math.PI / 4) as Radians);
+    const { data: poly } = getPolygonShape(element);
+    const center = pointFrom(50, 50);
+
+    expect(polygonIncludesPoint(center, poly)).toBe(true);
+  });
+
+  it("rotated rectangle hit polygon excludes stale-origin false positive", () => {
+    const element = makeRectangle(0, 0, 100, 100, (Math.PI / 4) as Radians);
+    const { data: poly } = getPolygonShape(element);
+    const staleOriginFalsePositive = pointFrom(10, 10);
+
+    expect(polygonIncludesPoint(staleOriginFalsePositive, poly)).toBe(false);
+  });
+
+  it("unrotated rectangle hit polygon includes center", () => {
+    const element = makeRectangle(0, 0, 100, 100, 0 as Radians);
+    const { data: poly } = getPolygonShape(element);
+
+    expect(polygonIncludesPoint(pointFrom(50, 50), poly)).toBe(true);
   });
 });
 
