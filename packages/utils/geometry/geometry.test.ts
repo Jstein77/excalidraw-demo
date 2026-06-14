@@ -10,10 +10,17 @@ import {
   polygon,
   pointOnLineSegment,
   pointOnPolygon,
+  pointRotateRads,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +44,56 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const x = 100;
+  const y = 100;
+  const width = 100;
+  const height = 80;
+  const center = pointFrom(x + width / 2, y + height / 2);
+  const corners = [
+    pointFrom(x, y),
+    pointFrom(x + width, y),
+    pointFrom(x + width, y + height),
+    pointFrom(x, y + height),
+  ];
+
+  const makeRectangle = (angle: Radians) =>
+    ({
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement);
+
+  it("rotates rectangle hit-test vertices around the element center", () => {
+    const angle = (Math.PI / 4) as Radians;
+    const shape = getPolygonShape(makeRectangle(angle));
+
+    expect(shape.type).toBe("polygon");
+    if (shape.type !== "polygon") {
+      return;
+    }
+
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
+    corners.forEach((corner, index) => {
+      expect(shape.data[index]).toEqual(pointRotateRads(corner, center, angle));
+    });
+  });
+
+  it("keeps the element center inside the unrotated rectangle hit shape", () => {
+    const shape = getPolygonShape(makeRectangle(0 as Radians));
+
+    expect(shape.type).toBe("polygon");
+    if (shape.type !== "polygon") {
+      return;
+    }
+
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
   });
 });
 
