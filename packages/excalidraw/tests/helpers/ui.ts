@@ -523,7 +523,7 @@ export class UI {
       document.querySelector<HTMLTextAreaElement>(textEditorSelector);
 
     if (!openedEditor) {
-      mouse.select(element);
+      API.setSelectedElements(Array.isArray(element) ? element : [element]);
       Keyboard.keyPress(KEYS.ENTER);
     }
 
