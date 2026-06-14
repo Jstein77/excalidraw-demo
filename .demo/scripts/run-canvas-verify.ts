@@ -68,9 +68,28 @@ Do everything yourself on this VM:
 2. Run Vitest commands from the PR test plan (read PR #${prNumber} description/body for the test plan)
 3. Start dev server, run full browser repro for rotated-rectangle selection
 4. Capture step screenshots, assemble GIF with ffmpeg
-5. Post a PR comment with inline GIF (GitHub user attachment) per skill template and verified checklist
+5. Post a PR comment with inline GIF (GitHub user attachment) using this exact structure:
 
-If verification fails, post a PR comment explaining what failed.
+\`\`\`markdown
+### Summary
+A 1-2 sentence summary. Include the test result (PASS or FAIL).
+
+### Verified
+- [x] \`yarn test packages/utils/geometry --watch=false\`
+- [x] Filled rectangle rotated ~45°, deselected, center click selects
+- [x] Unrotated filled rectangle center click still selects
+(Adjust checklist items to match what you actually ran.)
+
+### Notes
+Any notes (e.g. env quirks, skipped steps, failure details).
+
+### UI GIF
+![Rotated rectangle center-click selection verification](https://github.com/user-attachments/assets/{asset-id})
+
+<!-- CANVAS_VERIFY_RESULT:PASS -->
+\`\`\`
+
+If verification fails, use the same structure with FAIL in Summary, explain what failed in Notes, and attach the last screenshot/GIF in UI GIF.
 
 **Required — your final message must end with exactly one of these lines (nothing after it):**
 - \`CANVAS_VERIFY_RESULT=PASS\` — browser repro succeeded, GIF assembled, PR comment posted
