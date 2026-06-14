@@ -4,6 +4,7 @@ import type {
   Polygon,
   Radians,
 } from "@excalidraw/math";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
 import {
   pointFrom,
   lineSegment,
@@ -84,7 +85,7 @@ describe("getPolygonShape", () => {
       width: 200,
       height: 120,
       angle: (Math.PI / 4) as Radians,
-    });
+    }) as ExcalidrawRectangleElement;
 
     const shape = getPolygonShape<GlobalPoint>(rectangle);
 
@@ -104,7 +105,7 @@ describe("getPolygonShape", () => {
       width: 200,
       height: 120,
       angle: 0 as Radians,
-    });
+    }) as ExcalidrawRectangleElement;
 
     const shape = getPolygonShape<GlobalPoint>(rectangle);
 
