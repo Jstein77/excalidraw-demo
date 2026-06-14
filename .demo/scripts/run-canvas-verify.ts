@@ -68,7 +68,7 @@ Do everything yourself on this VM:
 2. Run Vitest commands from the PR test plan (read PR #${prNumber} description/body for the test plan)
 3. Start dev server, run full browser repro for rotated-rectangle selection
 4. Capture step screenshots, assemble GIF with ffmpeg
-5. Post a PR comment with inline GIF (GitHub user attachment) using this exact structure:
+5. Upload GIF via \`gh release create\` (GH_TOKEN) and post a PR comment with the release asset URL using this exact structure (see skill — do not use user-attachments):
 
 \`\`\`markdown
 ### Summary
@@ -84,7 +84,7 @@ A 1-2 sentence summary. Include the test result (PASS or FAIL).
 Any notes (e.g. env quirks, skipped steps, failure details).
 
 ### UI GIF
-![Rotated rectangle center-click selection verification](https://github.com/user-attachments/assets/{asset-id})
+![Rotated rectangle center-click selection verification](https://github.com/${owner}/${repo}/releases/download/canvas-verify-pr-${prNumber}-<timestamp>/verification.gif)
 
 <!-- CANVAS_VERIFY_RESULT:PASS -->
 \`\`\`

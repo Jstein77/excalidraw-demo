@@ -16,7 +16,7 @@ Run in order — do not skip browser repro when the test plan lists it.
 - [ ] 3. Dev server: yarn start → http://localhost:3000 (check terminals first)
 - [ ] 4. Browser repro: steps below → step-01…step-09.png
 - [ ] 5. GIF: ffmpeg palettegen/paletteuse → verification.gif
-- [ ] 6. PR comment: inline GIF + verified checklist + <!-- CANVAS_VERIFY_RESULT:PASS|FAIL -->
+- [ ] 6. Upload GIF via `gh release create` (GH_TOKEN); post PR comment with release URL + checklist + <!-- CANVAS_VERIFY_RESULT:PASS|FAIL -->
 - [ ] 7. Final line: CANVAS_VERIFY_RESULT=PASS or CANVAS_VERIFY_RESULT=FAIL
 ```
 
@@ -79,7 +79,7 @@ ffmpeg -y -framerate 1 -pattern_type glob -i 'step-*.png' -i palette.png \
   -lavfi "[0:v][1:v]paletteuse=dither=sierra2_4a" -loop 0 verification.gif
 ```
 
-Use palettegen/paletteuse — single `-vf scale=…` washes out colors. If no ffmpeg, attach ordered step PNGs individually.
+Use palettegen/paletteuse — single `-vf scale=…` washes out colors. If no ffmpeg, upload ordered step PNGs via the release path below instead of a GIF.
 
 ## Post PR comment
 
@@ -87,33 +87,56 @@ Use palettegen/paletteuse — single `-vf scale=…` washes out colors. If no ff
 
 **Do not commit verification GIFs to the repo.**
 
-### GIF upload (inline display)
+### GIF upload (cloud agent — use this path)
 
-1. **Preferred:** GitHub user attachment URL (`github.com/user-attachments/assets/…`) — requires `GH_TOKEN` fine-grained PAT with Issues + Pull requests write (not the Cursor `ghs_…` integration token). Upload via browser session or `gh extension install drogers0/gh-image`.
-2. **Fallback:** temporary release asset on the same repo (`gh release create … verification.gif`) — embed the `releases/download/…/verification.gif` URL.
-3. **Last resort:** attach ordered step PNGs individually (same release or user-attachments).
+**Do not use `github.com/user-attachments/assets/…` URLs.** That upload flow requires a browser session and does **not** work with `GH_TOKEN` (PAT). Do not run `gh image`, `curl uploads.github.com`, or similar — they will fail on cloud VMs.
+
+**Upload with `GH_TOKEN`** (fine-grained PAT with Issues + Pull requests write; not the Cursor `ghs_…` integration token):
 
 ```bash
-GH_TOKEN="$PAT" gh pr comment <N> --repo owner/repo --body-file comment.md
+# 1. Assemble GIF (see above) → /tmp/canvas-verify/verification.gif
+
+# 2. Upload as a temporary release asset
+TAG="canvas-verify-pr<N>-$(date +%s)"
+gh release create "$TAG" /tmp/canvas-verify/verification.gif \
+  --repo owner/repo \
+  --title "Canvas verify PR <N> (temp)" \
+  --notes "Temporary verification GIF for PR #<N>. Safe to delete after merge."
+
+# 3. Resolve embed URL
+GIF_URL=$(gh release view "$TAG" --repo owner/repo --json assets -q '.assets[0].url')
+
+# 4. Post comment — embed GIF_URL in the UI GIF section
+gh pr comment <N> --repo owner/repo --body-file comment.md
 ```
+
+If ffmpeg is unavailable, upload ordered `step-*.png` files on the same release and embed each URL in the PR comment.
 
 ### PR comment template
 
 ```markdown
-Browser verification passed.
+### Summary
 
-![Rotated rectangle center-click selection verification](https://github.com/user-attachments/assets/{asset-id})
+A 1-2 sentence summary. Include the test result (PASS or FAIL).
 
-<!-- CANVAS_VERIFY_RESULT:PASS -->
-
-Verified:
+### Verified
 
 - [x] `yarn test packages/utils/geometry --watch=false`
 - [x] Filled rectangle rotated ~45°, deselected, center click selects
 - [x] Unrotated filled rectangle center click still selects
+
+### Notes
+
+Any notes (e.g. env quirks, skipped steps, failure details).
+
+### UI GIF
+
+![Rotated rectangle center-click selection verification](https://github.com/owner/repo/releases/download/canvas-verify-pr<N>-<timestamp>/verification.gif)
+
+<!-- CANVAS_VERIFY_RESULT:PASS -->
 ```
 
-On failure, post the same template with `FAIL`, explain which step failed, and attach the last screenshot/GIF anyway.
+On failure, use the same structure with FAIL in Summary, explain what failed in Notes, and attach the last screenshot/GIF anyway.
 
 ## Debugging pointers
 
