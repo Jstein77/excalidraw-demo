@@ -1,3 +1,4 @@
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
 import type {
   GlobalPoint,
   LineSegment,
@@ -10,10 +11,46 @@ import {
   polygon,
   pointOnLineSegment,
   pointOnPolygon,
+  pointRotateRads,
+  pointsEqual,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
+
+describe("getPolygonShape", () => {
+  it("rotates rectangle-like polygons around the element center", () => {
+    const x = 100;
+    const y = 50;
+    const width = 200;
+    const height = 100;
+    const angle = (Math.PI / 4) as Radians;
+    const center = pointFrom(x + width / 2, y + height / 2);
+    const topLeft = pointFrom(x, y);
+
+    const element = {
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement;
+
+    const { data: poly } = getPolygonShape(element);
+    const expectedTopLeft = pointRotateRads(topLeft, center, angle);
+
+    expect(polygonIncludesPoint(center, poly)).toBe(true);
+    expect(poly.some((corner) => pointsEqual(corner, expectedTopLeft))).toBe(
+      true,
+    );
+  });
+});
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
