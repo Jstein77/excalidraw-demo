@@ -24,7 +24,7 @@ Example test plan item for selection bugs:
 - [ ] Unrotated rectangle still selects
 - [ ] `yarn test packages/utils/geometry --watch=false` passes
 
-For canvas interaction browser repro items, follow the `.cursor/skills/verify-canvas-interaction` skill — including GIF artifact committed to `.demo/` and posted in a PR comment.
+For canvas interaction browser repro items, follow the `.cursor/skills/verify-canvas-interaction` skill — including a GIF posted inline in a PR comment.
 
 ## Branch naming
 
