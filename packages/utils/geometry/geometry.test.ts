@@ -10,8 +10,8 @@ import {
   polygon,
   pointOnLineSegment,
   pointOnPolygon,
-  polygonIncludesPoint,
   pointRotateRads,
+  polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
 import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
@@ -144,32 +144,78 @@ describe("getPolygonShape", () => {
       angle,
     } as ExcalidrawRectangleElement);
 
-  it("rotates rectangular polygons around the element center", () => {
+  const getRectanglePolygon = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians = 0 as Radians,
+  ) => {
+    const shape = getPolygonShape<GlobalPoint>(
+      makeRectangle(x, y, width, height, angle),
+    );
+    expect(shape.type).toBe("polygon");
+    if (shape.type !== "polygon") {
+      throw new Error("Expected polygon shape");
+    }
+    return shape.data;
+  };
+
+  it("includes the visual center for a rotated rectangle", () => {
     const x = 100;
     const y = 100;
     const width = 200;
     const height = 100;
+    const angle = (Math.PI / 4) as Radians;
     const center = pointFrom(x + width / 2, y + height / 2);
 
-    const unrotated = getPolygonShape(makeRectangle(x, y, width, height));
-    expect(unrotated.type).toBe("polygon");
-    if (unrotated.type !== "polygon") {
-      throw new Error("Expected polygon shape");
-    }
-    expect(polygonIncludesPoint(center, unrotated.data)).toBe(true);
+    const polygonPoints = getRectanglePolygon(x, y, width, height, angle);
 
+    expect(polygonIncludesPoint(center, polygonPoints)).toBe(true);
+  });
+
+  it("rotates rectangle corners around the element center", () => {
+    const x = 100;
+    const y = 100;
+    const width = 200;
+    const height = 100;
     const angle = (Math.PI / 4) as Radians;
-    const rotated = getPolygonShape(makeRectangle(x, y, width, height, angle));
-    expect(rotated.type).toBe("polygon");
-    if (rotated.type !== "polygon") {
-      throw new Error("Expected polygon shape");
-    }
-    expect(polygonIncludesPoint(center, rotated.data)).toBe(true);
+    const center = pointFrom(x + width / 2, y + height / 2);
+    const topLeftOrigin = pointFrom(x, y);
 
-    const topLeft = pointFrom(x, y);
-    const expectedTopLeft = pointRotateRads(topLeft, center, angle);
-    expect(rotated.data[0][0]).toBeCloseTo(expectedTopLeft[0]);
-    expect(rotated.data[0][1]).toBeCloseTo(expectedTopLeft[1]);
+    const expectedCorners = [
+      pointRotateRads(pointFrom(x, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y + height), center, angle),
+      pointRotateRads(pointFrom(x, y + height), center, angle),
+    ];
+
+    const polygonPoints = getRectanglePolygon(x, y, width, height, angle);
+
+    expectedCorners.forEach((corner, index) => {
+      expect(polygonPoints[index][0]).toBeCloseTo(corner[0]);
+      expect(polygonPoints[index][1]).toBeCloseTo(corner[1]);
+    });
+
+    const originRotatedTopLeft = pointRotateRads(
+      pointFrom(x, y),
+      topLeftOrigin,
+      angle,
+    );
+    expect(polygonPoints[0][0]).not.toBeCloseTo(originRotatedTopLeft[0]);
+    expect(polygonPoints[0][1]).not.toBeCloseTo(originRotatedTopLeft[1]);
+  });
+
+  it("includes the center for an unrotated rectangle", () => {
+    const x = 50;
+    const y = 75;
+    const width = 120;
+    const height = 80;
+    const center = pointFrom(x + width / 2, y + height / 2);
+
+    const polygonPoints = getRectanglePolygon(x, y, width, height);
+
+    expect(polygonIncludesPoint(center, polygonPoints)).toBe(true);
   });
 });
 
