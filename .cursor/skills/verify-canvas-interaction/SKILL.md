@@ -1,113 +1,124 @@
 ---
 name: verify-canvas-interaction
 description: >-
-  Reproduce and verify canvas interaction bugs — selection, hit-testing, rotation, dragging — in the running Excalidraw app. Use when fixing or validating pointer/selection behavior, when a bug report mentions clicking/selecting/rotating shapes, or when reviewing a PR whose test plan includes browser repro steps for canvas interaction.
+  Reproduce and verify canvas interaction bugs — selection, hit-testing, rotation, dragging — in the running Excalidraw app. Use when fixing or validating pointer/selection behavior, when a bug report mentions clicking/selecting/rotating shapes, when reviewing a PR whose test plan includes browser repro steps, or when a cloud agent must post CANVAS_VERIFY_RESULT on a PR.
 ---
 
 # Verify Canvas Interaction
 
-Workflow for reproducing and verifying canvas selection/hit-testing bugs, both in the browser and with targeted tests.
+## Quick checklist (PR review / cloud agent)
+
+Run in order — do not skip browser repro when the test plan lists it.
+
+```
+- [ ] 1. Setup: nvm use && yarn install --frozen-lockfile
+- [ ] 2. Vitest: yarn test packages/utils/geometry --watch=false  (+ any PR-specific paths)
+- [ ] 3. Dev server: yarn start → http://localhost:3000 (check terminals first)
+- [ ] 4. Browser repro: steps below → step-01…step-09.png
+- [ ] 5. GIF: ffmpeg palettegen/paletteuse → verification.gif
+- [ ] 6. PR comment: inline GIF + verified checklist + <!-- CANVAS_VERIFY_RESULT:PASS|FAIL -->
+- [ ] 7. Final line: CANVAS_VERIFY_RESULT=PASS or CANVAS_VERIFY_RESULT=FAIL
+```
+
+**Pass criteria:** rotated filled rect selects on center click after deselect; unrotated filled rect still selects on center click; Vitest green.
+
+**Cloud agent contract:** final message ends with exactly `CANVAS_VERIFY_RESULT=PASS` or `CANVAS_VERIFY_RESULT=FAIL` (nothing after). PR comment body includes `<!-- CANVAS_VERIFY_RESULT:PASS -->` or `<!-- CANVAS_VERIFY_RESULT:FAIL -->`.
 
 ## Setup
 
-Before starting a dev server, check existing terminals — one may already be running.
-
 ```bash
 nvm use          # Node 22 from .nvmrc
-yarn install     # use --frozen-lockfile in cloud/CI environments
-yarn start       # http://localhost:3000
+yarn install --frozen-lockfile   # cloud/CI
+yarn start       # http://localhost:3000 — check existing terminals first
 ```
 
-## Keyboard shortcuts (tool selection)
+Viewport for automation: **2074×1167** (see `.demo/browser-repro-coords.md`).
 
-| Key        | Tool      |
-| ---------- | --------- |
-| `V` or `1` | Selection |
-| `R` or `2` | Rectangle |
-| `D` or `3` | Diamond   |
-| `O` or `4` | Ellipse   |
-| `A` or `5` | Arrow     |
-| `L` or `6` | Line      |
+## Programmatic verification (run first)
+
+```bash
+yarn test packages/utils/geometry --watch=false
+```
+
+Programmatic pass is **not** sufficient when the PR test plan lists browser repro — still run browser workflow.
 
 ## Browser verification workflow
 
-Record the test as a sequence of screenshots — one after each step below — so the full interaction is documented, not just the end state.
+Record one screenshot per step (`step-01.png` … `step-09.png`). Use browser MCP, Puppeteer, or manual interaction — follow these steps exactly; do not re-derive coordinates each run.
 
-1. Open http://localhost:3000 and click the canvas center to dismiss the welcome screen.
-2. Press `R`, then drag to draw a rectangle (~200×120) near the canvas center.
-3. Set a **fill/background color** on the rectangle — transparent/default rectangles hit-test by outline only, so center-click selection tests require a fill.
-4. The shape is selected after drawing — drag the rotation handle (below the shape) to rotate it ~45°.
-5. Press `V`, click an empty area to deselect, then click the center of the rotated shape.
-6. Capture the final frame. **Pass:** selection handles appear around the shape. **Fail:** no selection.
-7. Also verify the unrotated case: draw a second rectangle (with fill), deselect, click its center — it must still select.
+| Step | Action | Screenshot |
+| --- | --- | --- |
+| 1 | Click canvas center `(1037,584)` — dismiss welcome | step-01.png |
+| 2 | `R` → drag rect `(937,524)`→`(1137,644)` | step-02.png |
+| 3 | Set **Background** fill — click 2nd color swatch under Background heading (red `#ffc9c9`) | step-03.png |
+| 4 | Drag **rotation handle above top edge** (computed from localStorage + canvas bounds) ~45°+ | step-04.png |
+| 5 | `V` → click empty area `(300,200)` to deselect | step-05.png |
+| 6 | Click computed visual center of rotated rect | step-06.png |
+| 7 | `R` → second rect `(700,750)`→`(900,870)` + fill | step-07.png |
+| 8 | `V` → deselect | step-08.png |
+| 9 | Click computed center of second rect | step-09.png |
 
-Repeat with the relevant shape/rotation from the bug report if it differs.
+**Pass/fail:** read `localStorage["excalidraw-state"].selectedElementIds` after center clicks — count > 0 = pass. Do not rely on pixel diff alone.
 
-### Assemble the recording
+**Gotchas:**
 
-Combine the step screenshots into a single recording (GIF or MP4) and attach it to the PR or bug report:
+1. **Fill required** — default/transparent rects hit-test outline only; center-click tests need a solid background color.
+2. **Rotation handle is above the shape**, not below (`transformHandles.ts`: handle sits above top edge + gap).
+3. **Compute click/drag coords from scene space** — use element `x,y,width,height` from `localStorage["excalidraw"]` + canvas `getBoundingClientRect()` + `scrollX/scrollY/zoom` from `excalidraw-state`. Hardcoded viewport coords are fallbacks only.
+4. **Wait ~600ms after clicks** — localStorage persistence debounces (~300ms).
+
+Keyboard shortcuts: `V`/selection, `R`/rectangle, `D`/diamond, `O`/ellipse.
+
+## Assemble GIF
 
 ```bash
-# screenshots named step-01.png, step-02.png, ... in order
-ffmpeg -framerate 1 -pattern_type glob -i 'step-*.png' -vf "scale=1280:-2" verification.mp4
-# GIF — use palettegen/paletteuse (single -vf scale=… produces washed-out/yellow colors)
+cd /tmp/canvas-verify/screenshots   # or your --out-dir
 ffmpeg -y -framerate 1 -pattern_type glob -i 'step-*.png' \
   -vf "palettegen=stats_mode=full:max_colors=256" -update 1 -frames:v 1 palette.png
 ffmpeg -y -framerate 1 -pattern_type glob -i 'step-*.png' -i palette.png \
   -lavfi "[0:v][1:v]paletteuse=dither=sierra2_4a" -loop 0 verification.gif
 ```
 
-If `ffmpeg` is unavailable, attach the ordered screenshots individually instead.
+Use palettegen/paletteuse — single `-vf scale=…` washes out colors. If no ffmpeg, attach ordered step PNGs individually.
 
-## Programmatic verification (run first)
+## Post PR comment
 
-Faster than the browser; run first when a regression test covers the behavior:
+**Never** reference `/tmp/`, `/opt/cursor/`, or other local-only paths in comments.
+
+**Do not commit verification GIFs to the repo.**
+
+### GIF upload (inline display)
+
+1. **Preferred:** GitHub user attachment URL (`github.com/user-attachments/assets/…`) — requires `GH_TOKEN` fine-grained PAT with Issues + Pull requests write (not the Cursor `ghs_…` integration token). Upload via browser session or `gh extension install drogers0/gh-image`.
+2. **Fallback:** temporary release asset on the same repo (`gh release create … verification.gif`) — embed the `releases/download/…/verification.gif` URL.
+3. **Last resort:** attach ordered step PNGs individually (same release or user-attachments).
 
 ```bash
-yarn test packages/utils/geometry --watch=false
+GH_TOKEN="$PAT" gh pr comment <N> --repo owner/repo --body-file comment.md
 ```
 
-When the PR test plan lists browser repro steps, programmatic tests passing is **not** sufficient — still run the browser workflow below. Do not leave a "residual note" about skipping browser verification.
-
-## PR review workflow (mandatory when test plan has browser steps)
-
-When reviewing a PR (e.g. `@cursoragent review this pr`) whose test plan includes canvas browser repro items, run this full sequence without deferring steps:
-
-1. **Setup** — `nvm use`, `yarn install --frozen-lockfile` (cloud environments often start without node_modules)
-2. **Static validation** — ESLint changed files with `--max-warnings=0`; run Vitest commands from the PR test plan
-3. **Browser repro** — start dev server if needed; run the browser verification workflow above in headless Chrome; **do not skip or defer this step**
-4. **Recording** — capture step screenshots and assemble a GIF via the ffmpeg commands above
-5. **Post PR comment** — attach the GIF inline (user attachment) and include verified checklist bullets (see below)
-
-Fix any issues found (lint, tests, repro failures) before posting the review comment.
-
-## Posting verification artifacts to PR comments
-
-**Never** reference `/opt/cursor/`, `/tmp/`, or other local-only paths in PR comments — GitHub cannot render them.
-
-**Do not commit verification GIFs to the repo** — keep artifacts on the agent VM only.
-
-**GIF (preferred for inline display):** upload as a GitHub user attachment when posting the PR comment (requires `GH_TOKEN` with issues write). Use `gh pr comment` with a body that embeds the uploaded asset URL (`github.com/user-attachments/assets/...`). If upload is unavailable, attach the ordered step screenshots individually instead.
-
-**MP4:** raw GitHub URLs serve as `application/octet-stream` and **will not inline** in PR comments. Prefer GIF for PR comments.
-
-**PR comment template:**
+### PR comment template
 
 ```markdown
 Browser verification passed.
 
-![{description}](https://github.com/user-attachments/assets/{asset-id})
+![Rotated rectangle center-click selection verification](https://github.com/user-attachments/assets/{asset-id})
+
+<!-- CANVAS_VERIFY_RESULT:PASS -->
 
 Verified:
 
-- [ ] {test plan item 1}
-- [ ] {test plan item 2}
+- [x] `yarn test packages/utils/geometry --watch=false`
+- [x] Filled rectangle rotated ~45°, deselected, center click selects
+- [x] Unrotated filled rectangle center click still selects
 ```
+
+On failure, post the same template with `FAIL`, explain which step failed, and attach the last screenshot/GIF anyway.
 
 ## Debugging pointers
 
-Hit-testing trace path for selection bugs:
+Hit-testing path: `App.getElementAtPosition` → `hitElementItself` → `getElementShape` → `packages/utils/geometry/shape.ts` (`getPolygonShape`).
 
-`App.getElementAtPosition` → `hitElementItself` → `getElementShape` (`packages/excalidraw/shapes.tsx`) → shape builders in `packages/utils/geometry/shape.ts` (e.g. `getPolygonShape`).
+Rotation bugs: rotation origin must be element **center**, not `(x,y)` top-left. Compare with `pointRotateRads` in `packages/math/`.
 
-For rotation issues, check that the rotation origin used by the shape builder is the element center, and compare with `pointRotateRads` usage in `packages/math/`.
+Repro coords reference: `.demo/browser-repro-coords.md`.
