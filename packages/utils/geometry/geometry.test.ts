@@ -104,7 +104,7 @@ describe("element polygons", () => {
 
     expect(shape.type).toBe("polygon");
     expect(polygonIncludesPoint(center, shape.data)).toBe(true);
-    expect(polygonIncludesPoint(pointFrom(20, 30), shape.data)).toBe(false);
+    expect(polygonIncludesPoint(pointFrom(20, 80), shape.data)).toBe(false);
 
     [
       pointFrom<GlobalPoint>(rectangle.x, rectangle.y),
@@ -134,6 +134,7 @@ describe("element polygons", () => {
       pointFrom(rectangle.x + rectangle.width, rectangle.y),
       pointFrom(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
       pointFrom(rectangle.x, rectangle.y + rectangle.height),
+      pointFrom(rectangle.x, rectangle.y),
     ]);
   });
 
