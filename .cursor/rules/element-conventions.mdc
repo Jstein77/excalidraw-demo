@@ -15,6 +15,7 @@ alwaysApply: false
 - Use `@excalidraw/math` helpers (`pointFrom`, `pointRotateRads`, `polygon`, etc.) — do not hand-roll rotation math.
 - Hit detection shapes come from `getElementShape()` / `getPolygonShape()` in `packages/excalidraw/shapes.tsx` and `packages/utils/geometry/shape.ts`.
 - Rotation for hit testing must stay consistent between polygon shapes and collision distance checks (`packages/excalidraw/element/collision.ts`, `distance.ts`).
+- When tests call polygon-only helpers such as `polygonIncludesPoint`, first narrow `GeometricShape` results with `shape.type === "polygon"` before passing `shape.data`.
 
 ## Tests (required for element fixes)
 
@@ -25,5 +26,7 @@ Any fix under `packages/excalidraw/element/` or `packages/utils/geometry/` **mus
 yarn test packages/utils/geometry --watch=false
 yarn test packages/excalidraw/tests/selection.test.tsx --watch=false
 ```
+
+For TypeScript geometry/element changes, also run `yarn test:typecheck` before opening a PR because CI lint includes TypeScript typechecking.
 
 Prefer a unit test on the geometry helper when possible; add an integration test if the bug is selection-specific.

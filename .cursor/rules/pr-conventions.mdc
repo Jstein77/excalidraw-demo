@@ -12,6 +12,20 @@ alwaysApply: true
 
 ## Pull requests
 
+### PR title
+
+PR titles must pass `.github/workflows/semantic-pr-title.yml`.
+
+Use a conventional PR title:
+
+- `fix: ...`
+- `test: ...`
+- `chore: ...`
+- `docs: ...`
+- `refactor: ...`
+
+Do not prefix titles with `Draft:`. If the PR should be draft, use the PR draft state/tooling, not title text.
+
 Every PR body must include:
 
 1. **Root cause** — what was wrong and why (1–2 sentences)
