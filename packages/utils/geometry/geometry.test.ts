@@ -12,7 +12,6 @@ import {
   pointOnLineSegment,
   pointOnPolygon,
   pointRotateRads,
-  pointsEqual,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
@@ -24,31 +23,47 @@ import {
 } from "./shape";
 
 describe("getPolygonShape", () => {
-  it("rotates rectangle-like polygons around the element center", () => {
-    const x = 100;
-    const y = 50;
-    const width = 200;
-    const height = 100;
-    const angle = (Math.PI / 4) as Radians;
-    const center = pointFrom(x + width / 2, y + height / 2);
-    const topLeft = pointFrom(x, y);
-
-    const element = {
+  const createRectangle = (
+    overrides: Partial<ExcalidrawRectangleElement> = {},
+  ): ExcalidrawRectangleElement =>
+    ({
       type: "rectangle",
-      x,
-      y,
-      width,
-      height,
-      angle,
-    } as ExcalidrawRectangleElement;
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      angle: Math.PI / 4,
+      ...overrides,
+    } as ExcalidrawRectangleElement);
 
-    const { data: poly } = getPolygonShape(element);
-    const expectedTopLeft = pointRotateRads(topLeft, center, angle);
-
+  it("places rotated rectangle visual center inside the polygon", () => {
+    const rect = createRectangle({ angle: (Math.PI / 4) as Radians });
+    const { data: poly } = getPolygonShape(rect);
+    const center = pointFrom(rect.x + rect.width / 2, rect.y + rect.height / 2);
     expect(polygonIncludesPoint(center, poly)).toBe(true);
-    expect(poly.some((corner) => pointsEqual(corner, expectedTopLeft))).toBe(
-      true,
-    );
+  });
+
+  it("places unrotated rectangle visual center inside the polygon", () => {
+    const rect = createRectangle({ angle: 0 as Radians });
+    const { data: poly } = getPolygonShape(rect);
+    const center = pointFrom(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    expect(polygonIncludesPoint(center, poly)).toBe(true);
+  });
+
+  it("rotates rectangle corners around the element center", () => {
+    const rect = createRectangle({ angle: (Math.PI / 4) as Radians });
+    const { x, y, width, height, angle } = rect;
+    const center = pointFrom(x + width / 2, y + height / 2);
+    const { data: poly } = getPolygonShape(rect);
+
+    const expectedCorners = [
+      pointRotateRads(pointFrom(x, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y + height), center, angle),
+      pointRotateRads(pointFrom(x, y + height), center, angle),
+    ];
+
+    expect(poly).toEqual(expectedCorners);
   });
 });
 
