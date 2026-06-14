@@ -10,10 +10,17 @@ import {
   polygon,
   pointOnLineSegment,
   pointOnPolygon,
+  pointRotateRads,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +44,48 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const makeRectangle = (
+    overrides: Partial<ExcalidrawRectangleElement> = {},
+  ): ExcalidrawRectangleElement =>
+    ({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      angle: 0 as Radians,
+      ...overrides,
+    } as ExcalidrawRectangleElement);
+
+  it("includes the center for an unrotated rectangle", () => {
+    const element = makeRectangle();
+    const { data: poly } = getPolygonShape(element);
+
+    expect(polygonIncludesPoint(pointFrom(200, 150), poly)).toBe(true);
+  });
+
+  it("rotates rectangle corners around the element center", () => {
+    const element = makeRectangle({ angle: (Math.PI / 4) as Radians });
+    const { x, y, width, height, angle } = element;
+    const center = pointFrom(x + width / 2, y + height / 2);
+    const { data: poly } = getPolygonShape(element);
+
+    expect(polygonIncludesPoint(center, poly)).toBe(true);
+
+    const corners = [
+      pointFrom(x, y),
+      pointFrom(x + width, y),
+      pointFrom(x + width, y + height),
+      pointFrom(x, y + height),
+    ];
+
+    corners.forEach((corner, index) => {
+      expect(poly[index]).toEqual(pointRotateRads(corner, center, angle));
+    });
   });
 });
 
