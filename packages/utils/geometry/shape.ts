@@ -120,6 +120,7 @@ export const getPolygonShape = <Point extends GlobalPoint | LocalPoint>(
 
   const center: Point = pointFrom(cx, cy);
   // TODO: Remove me before merging
+  // Rectanguloid hit shapes rotate around element center (matches selection box)
   const rotationOrigin: Point = center;
 
   let data: Polygon<Point>;
