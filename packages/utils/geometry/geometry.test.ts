@@ -1,4 +1,8 @@
 import type {
+  ExcalidrawDiamondElement,
+  ExcalidrawRectangleElement,
+} from "@excalidraw/excalidraw/element/types";
+import type {
   GlobalPoint,
   LineSegment,
   Polygon,
@@ -10,10 +14,16 @@ import {
   polygon,
   pointOnLineSegment,
   pointOnPolygon,
+  pointRotateRads,
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -117,6 +127,84 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const makeRectangle = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians = 0 as Radians,
+  ): ExcalidrawRectangleElement =>
+    ({
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement);
+
+  const makeDiamond = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians = 0 as Radians,
+  ): ExcalidrawDiamondElement =>
+    ({
+      type: "diamond",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawDiamondElement);
+
+  it("unrotated rectangle polygon contains its center", () => {
+    const element = makeRectangle(10, 20, 80, 40);
+    const center = pointFrom(50, 40);
+    const { data: poly } = getPolygonShape(element);
+
+    expect(polygonIncludesPoint(center, poly)).toBe(true);
+  });
+
+  it("rotated rectangle polygon contains its center and uses center rotation", () => {
+    const x = 100;
+    const y = 50;
+    const width = 80;
+    const height = 40;
+    const angle = (Math.PI / 4) as Radians;
+    const element = makeRectangle(x, y, width, height, angle);
+    const center = pointFrom(x + width / 2, y + height / 2);
+    const { data: poly } = getPolygonShape(element);
+
+    expect(polygonIncludesPoint(center, poly)).toBe(true);
+
+    const expectedCorners = [
+      pointRotateRads(pointFrom(x, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y + height), center, angle),
+      pointRotateRads(pointFrom(x, y + height), center, angle),
+    ];
+    expectedCorners.forEach((corner, index) => {
+      expect(poly[index]).toEqual(corner);
+    });
+  });
+
+  it("rotated diamond polygon contains its center", () => {
+    const x = 30;
+    const y = 40;
+    const width = 60;
+    const height = 80;
+    const angle = (Math.PI / 3) as Radians;
+    const element = makeDiamond(x, y, width, height, angle);
+    const center = pointFrom(x + width / 2, y + height / 2);
+    const { data: poly } = getPolygonShape(element);
+
+    expect(polygonIncludesPoint(center, poly)).toBe(true);
   });
 });
 
