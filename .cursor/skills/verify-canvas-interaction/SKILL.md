@@ -77,8 +77,7 @@ When reviewing a PR (e.g. `@cursoragent review this pr`) whose test plan include
 2. **Static validation** — ESLint changed files with `--max-warnings=0`; run Vitest commands from the PR test plan
 3. **Browser repro** — start dev server if needed; run the browser verification workflow above in headless Chrome; **do not skip or defer this step**
 4. **Recording** — capture step screenshots and assemble a GIF via the ffmpeg commands above
-5. **Publish artifact** — commit the GIF to `.demo/<descriptive-name>.gif` on the PR branch (`docs:` prefix commit)
-6. **Post PR comment** — include the repo-backed GIF URL and verified checklist bullets (see below)
+5. **Post PR comment** — attach the GIF inline (user attachment) and include verified checklist bullets (see below)
 
 Fix any issues found (lint, tests, repro failures) before posting the review comment.
 
@@ -86,22 +85,18 @@ Fix any issues found (lint, tests, repro failures) before posting the review com
 
 **Never** reference `/opt/cursor/`, `/tmp/`, or other local-only paths in PR comments — GitHub cannot render them.
 
-**GIF (preferred for inline display):** commit to `.demo/`, then post:
+**Do not commit verification GIFs to the repo** — keep artifacts on the agent VM only.
 
-```markdown
-![Rotated rectangle selection](https://raw.githubusercontent.com/{owner}/{repo}/{commit}/.demo/{name}.gif)
-```
+**GIF (preferred for inline display):** upload as a GitHub user attachment when posting the PR comment (requires `GH_TOKEN` with issues write). Use `gh pr comment` with a body that embeds the uploaded asset URL (`github.com/user-attachments/assets/...`). If upload is unavailable, attach the ordered step screenshots individually instead.
 
-Verify the URL returns HTTP 200 before commenting.
-
-**MP4:** may be committed to `.demo/` as supplementary evidence, but raw GitHub URLs serve as `application/octet-stream` and **will not inline** in PR comments. Do not claim inline video unless using a `github.com/user-attachments/assets/...` URL (agents cannot create these via `gh` token — tell the user to drag/drop the file into the comment box if they need inline video). Prefer GIF for PR comments.
+**MP4:** raw GitHub URLs serve as `application/octet-stream` and **will not inline** in PR comments. Prefer GIF for PR comments.
 
 **PR comment template:**
 
 ```markdown
 Browser verification passed.
 
-![{description}](https://raw.githubusercontent.com/{owner}/{repo}/{commit}/.demo/{name}.gif)
+![{description}](https://github.com/user-attachments/assets/{asset-id})
 
 Verified:
 

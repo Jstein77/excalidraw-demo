@@ -62,13 +62,12 @@ Do everything yourself on this VM:
 2. Run Vitest commands from the PR test plan (read PR #${prNumber} description/body for the test plan)
 3. Start dev server, run full browser repro for rotated-rectangle selection
 4. Capture step screenshots, assemble GIF with ffmpeg
-5. Commit GIF to \`.demo/\` on this branch (\`docs: canvas UI verify GIF [skip ci]\`), push
-6. Post PR comment with inline GIF URL per skill template and verified checklist
+5. Post PR comment with inline GIF (GitHub user attachment) per skill template and verified checklist
 
-If verification fails, post a PR comment explaining what failed. Do not push a GIF.
+If verification fails, post a PR comment explaining what failed.
 
 **Required — your final message must end with exactly one of these lines (nothing after it):**
-- \`CANVAS_VERIFY_RESULT=PASS\` — browser repro succeeded, GIF committed, PR comment posted
+- \`CANVAS_VERIFY_RESULT=PASS\` — browser repro succeeded, GIF assembled, PR comment posted
 - \`CANVAS_VERIFY_RESULT=FAIL\` — any step failed
 
 Also include \`<!-- CANVAS_VERIFY_RESULT:PASS -->\` or \`<!-- CANVAS_VERIFY_RESULT:FAIL -->\` in the PR comment body.
