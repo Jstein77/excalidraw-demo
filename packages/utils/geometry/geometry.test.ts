@@ -11,9 +11,16 @@ import {
   pointOnLineSegment,
   pointOnPolygon,
   polygonIncludesPoint,
+  pointRotateRads,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -117,6 +124,52 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const makeRectangle = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians = 0 as Radians,
+  ) =>
+    ({
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement);
+
+  it("rotates rectangular polygons around the element center", () => {
+    const x = 100;
+    const y = 100;
+    const width = 200;
+    const height = 100;
+    const center = pointFrom(x + width / 2, y + height / 2);
+
+    const unrotated = getPolygonShape(makeRectangle(x, y, width, height));
+    expect(unrotated.type).toBe("polygon");
+    if (unrotated.type !== "polygon") {
+      throw new Error("Expected polygon shape");
+    }
+    expect(polygonIncludesPoint(center, unrotated.data)).toBe(true);
+
+    const angle = (Math.PI / 4) as Radians;
+    const rotated = getPolygonShape(makeRectangle(x, y, width, height, angle));
+    expect(rotated.type).toBe("polygon");
+    if (rotated.type !== "polygon") {
+      throw new Error("Expected polygon shape");
+    }
+    expect(polygonIncludesPoint(center, rotated.data)).toBe(true);
+
+    const topLeft = pointFrom(x, y);
+    const expectedTopLeft = pointRotateRads(topLeft, center, angle);
+    expect(rotated.data[0][0]).toBeCloseTo(expectedTopLeft[0]);
+    expect(rotated.data[0][1]).toBeCloseTo(expectedTopLeft[1]);
   });
 });
 
