@@ -24,7 +24,7 @@ import {
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
-
+  //TODO: test remove before merging
   // it("point on left or right of line", () => {
   //   expect(pointLeftofLine(point(0, 1), l)).toBe(true);
   //   expect(pointLeftofLine(point(1, 1), l)).toBe(false);
