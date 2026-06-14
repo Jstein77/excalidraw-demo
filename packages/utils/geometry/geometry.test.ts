@@ -13,7 +13,13 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -117,6 +123,36 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  it("rotates rectanguloids around center for hit-testing", () => {
+    const rect = {
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      angle: 0 as Radians,
+    } as ExcalidrawRectangleElement;
+
+    const center = pointFrom(200, 150);
+
+    const unrotatedShape = getPolygonShape(rect);
+    expect(unrotatedShape.type).toBe("polygon");
+    if (unrotatedShape.type === "polygon") {
+      expect(polygonIncludesPoint(center, unrotatedShape.data)).toBe(true);
+    }
+
+    const rotatedShape = getPolygonShape({
+      ...rect,
+      angle: (Math.PI / 4) as Radians,
+    });
+    expect(rotatedShape.type).toBe("polygon");
+    if (rotatedShape.type === "polygon") {
+      expect(polygonIncludesPoint(center, rotatedShape.data)).toBe(true);
+    }
   });
 });
 
