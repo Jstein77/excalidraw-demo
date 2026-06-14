@@ -13,7 +13,13 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import { API } from "@excalidraw/excalidraw/tests/helpers/api";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -117,6 +123,42 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  it("uses element center as rotation origin for rectangular hit shapes", () => {
+    const unrotated = API.createElement({
+      type: "rectangle",
+      x: 10,
+      y: 20,
+      width: 100,
+      height: 50,
+      angle: 0 as Radians,
+    });
+    const unrotatedPolygon = getPolygonShape(unrotated).data;
+    expect(polygonIncludesPoint(pointFrom(60, 45), unrotatedPolygon)).toBe(
+      true,
+    );
+    expect(polygonIncludesPoint(pointFrom(0, 0), unrotatedPolygon)).toBe(false);
+
+    const rotated = API.createElement({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      angle: (Math.PI / 4) as Radians,
+    });
+    const rotatedPolygon = getPolygonShape(rotated).data;
+    const visualCenter = pointFrom(200, 150);
+
+    expect(polygonIncludesPoint(visualCenter, rotatedPolygon)).toBe(true);
+
+    // Inside the old top-left pivot polygon, but outside the center-pivot shape.
+    expect(polygonIncludesPoint(pointFrom(100, 100), rotatedPolygon)).toBe(
+      false,
+    );
   });
 });
 
