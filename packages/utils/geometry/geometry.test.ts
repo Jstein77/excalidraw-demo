@@ -14,6 +14,7 @@ import {
   pointRotateRads,
   segmentsIntersectAt,
 } from "@excalidraw/math";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
 import { API } from "@excalidraw/excalidraw/tests/helpers/api";
 import {
   getPolygonShape,
@@ -56,7 +57,7 @@ describe("getPolygonShape", () => {
       width: 200,
       height: 100,
       angle: Math.PI / 4,
-    });
+    }) as ExcalidrawRectangleElement;
 
     const shape = getPolygonShape(element);
     expect(shape.type).toBe("polygon");
@@ -77,7 +78,7 @@ describe("getPolygonShape", () => {
       width: 200,
       height: 100,
       angle: 0,
-    });
+    }) as ExcalidrawRectangleElement;
     const unrotatedShape = getPolygonShape(unrotated);
     expect(unrotatedShape.type).toBe("polygon");
     if (unrotatedShape.type !== "polygon") {
