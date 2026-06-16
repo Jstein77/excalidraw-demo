@@ -4,6 +4,7 @@ import type {
   Polygon,
   Radians,
 } from "@excalidraw/math";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
 import {
   pointFrom,
   lineSegment,
@@ -13,7 +14,12 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +43,42 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  it("rotated rectangle polygon includes its center", () => {
+    const x = 100;
+    const y = 100;
+    const width = 200;
+    const height = 120;
+    const angle = Math.PI / 4;
+
+    const element = {
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement;
+
+    const shape = getPolygonShape(element);
+
+    expect(shape.type).toBe("polygon");
+    if (shape.type !== "polygon") {
+      return;
+    }
+
+    expect(
+      polygonIncludesPoint(
+        pointFrom(x + width / 2, y + height / 2),
+        shape.data,
+      ),
+    ).toBe(true);
+    expect(polygonIncludesPoint(pointFrom(x - 500, y - 500), shape.data)).toBe(
+      false,
+    );
   });
 });
 
