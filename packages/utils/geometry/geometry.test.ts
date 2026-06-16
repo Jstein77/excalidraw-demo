@@ -11,9 +11,16 @@ import {
   pointOnLineSegment,
   pointOnPolygon,
   polygonIncludesPoint,
+  pointRotateRads,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import { API } from "@excalidraw/excalidraw/tests/helpers/api";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +44,61 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  it("rotates rectangular hit polygons around element center", () => {
+    const element = API.createElement({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      angle: Math.PI / 4,
+    });
+
+    const shape = getPolygonShape(element);
+    expect(shape.type).toBe("polygon");
+    if (shape.type !== "polygon") {
+      return;
+    }
+
+    const center = pointFrom(
+      element.x + element.width / 2,
+      element.y + element.height / 2,
+    );
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
+
+    const unrotated = API.createElement({
+      type: "rectangle",
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+      angle: 0,
+    });
+    const unrotatedShape = getPolygonShape(unrotated);
+    expect(unrotatedShape.type).toBe("polygon");
+    if (unrotatedShape.type !== "polygon") {
+      return;
+    }
+    expect(
+      polygonIncludesPoint(
+        pointFrom(
+          unrotated.x + unrotated.width / 2,
+          unrotated.y + unrotated.height / 2,
+        ),
+        unrotatedShape.data,
+      ),
+    ).toBe(true);
+
+    const topLeftOriginPoint = pointRotateRads(
+      center,
+      pointFrom(element.x, element.y),
+      element.angle,
+    );
+    expect(polygonIncludesPoint(topLeftOriginPoint, shape.data)).toBe(false);
   });
 });
 
