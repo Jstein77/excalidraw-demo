@@ -13,7 +13,12 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +42,41 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  it("hit polygon includes visual center for rotated and unrotated rectangles", () => {
+    const rect = {
+      type: "rectangle" as const,
+      x: 100,
+      y: 100,
+      width: 200,
+      height: 100,
+    };
+    const rectangleElement = (angle: Radians) =>
+      ({
+        ...rect,
+        angle,
+      } as Parameters<typeof getPolygonShape>[0]);
+    const center = pointFrom(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    const outside = pointFrom(0, 0);
+
+    const unrotatedShape = getPolygonShape(rectangleElement(0 as Radians));
+    expect(unrotatedShape.type).toBe("polygon");
+    if (unrotatedShape.type === "polygon") {
+      expect(polygonIncludesPoint(center, unrotatedShape.data)).toBe(true);
+      expect(polygonIncludesPoint(outside, unrotatedShape.data)).toBe(false);
+    }
+
+    const rotatedShape = getPolygonShape(
+      rectangleElement((Math.PI / 4) as Radians),
+    );
+    expect(rotatedShape.type).toBe("polygon");
+    if (rotatedShape.type === "polygon") {
+      expect(polygonIncludesPoint(center, rotatedShape.data)).toBe(true);
+      expect(polygonIncludesPoint(outside, rotatedShape.data)).toBe(false);
+    }
   });
 });
 
