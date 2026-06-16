@@ -13,7 +13,13 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +43,44 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const makeRectangle = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians,
+  ): ExcalidrawRectangleElement =>
+    ({
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement);
+
+  it("rotated rectangle polygon includes visual center", () => {
+    const element = makeRectangle(100, 100, 200, 100, (Math.PI / 4) as Radians);
+    const shape = getPolygonShape(element);
+    if (shape.type !== "polygon") {
+      throw new Error("expected polygon shape");
+    }
+    const center = pointFrom(100 + 200 / 2, 100 + 100 / 2);
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
+  });
+
+  it("unrotated rectangle polygon includes visual center", () => {
+    const element = makeRectangle(100, 100, 200, 100, 0 as Radians);
+    const shape = getPolygonShape(element);
+    if (shape.type !== "polygon") {
+      throw new Error("expected polygon shape");
+    }
+    const center = pointFrom(100 + 200 / 2, 100 + 100 / 2);
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
   });
 });
 
