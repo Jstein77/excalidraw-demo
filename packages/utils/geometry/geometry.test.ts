@@ -13,7 +13,13 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +43,44 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const makeRectangle = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians,
+  ) =>
+    ({
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement);
+
+  it("includes the visual center for rotated and unrotated rectangles", () => {
+    const unrotated = makeRectangle(0, 0, 100, 50, 0 as Radians);
+    const unrotatedShape = getPolygonShape(unrotated);
+    expect(unrotatedShape.type).toBe("polygon");
+    if (unrotatedShape.type === "polygon") {
+      expect(polygonIncludesPoint(pointFrom(50, 25), unrotatedShape.data)).toBe(
+        true,
+      );
+    }
+
+    const rotated = makeRectangle(0, 0, 100, 50, (Math.PI / 4) as Radians);
+    const rotatedShape = getPolygonShape(rotated);
+    expect(rotatedShape.type).toBe("polygon");
+    if (rotatedShape.type === "polygon") {
+      expect(polygonIncludesPoint(pointFrom(50, 25), rotatedShape.data)).toBe(
+        true,
+      );
+    }
   });
 });
 
