@@ -119,25 +119,23 @@ export const getPolygonShape = <Point extends GlobalPoint | LocalPoint>(
   const cy = y + height / 2;
 
   const center: Point = pointFrom(cx, cy);
-  // Rectanguloid hit shapes rotate around element origin (matches render pivot)
-  const rotationOrigin: Point =
-    element.type === "diamond" ? center : pointFrom(x, y);
+  // TODO: Remove me before merging
 
   let data: Polygon<Point>;
 
   if (element.type === "diamond") {
     data = polygon(
-      pointRotateRads(pointFrom(cx, y), rotationOrigin, angle),
-      pointRotateRads(pointFrom(x + width, cy), rotationOrigin, angle),
-      pointRotateRads(pointFrom(cx, y + height), rotationOrigin, angle),
-      pointRotateRads(pointFrom(x, cy), rotationOrigin, angle),
+      pointRotateRads(pointFrom(cx, y), center, angle),
+      pointRotateRads(pointFrom(x + width, cy), center, angle),
+      pointRotateRads(pointFrom(cx, y + height), center, angle),
+      pointRotateRads(pointFrom(x, cy), center, angle),
     );
   } else {
     data = polygon(
-      pointRotateRads(pointFrom(x, y), rotationOrigin, angle),
-      pointRotateRads(pointFrom(x + width, y), rotationOrigin, angle),
-      pointRotateRads(pointFrom(x + width, y + height), rotationOrigin, angle),
-      pointRotateRads(pointFrom(x, y + height), rotationOrigin, angle),
+      pointRotateRads(pointFrom(x, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y), center, angle),
+      pointRotateRads(pointFrom(x + width, y + height), center, angle),
+      pointRotateRads(pointFrom(x, y + height), center, angle),
     );
   }
 

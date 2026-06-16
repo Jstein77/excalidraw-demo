@@ -13,7 +13,13 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -37,6 +43,62 @@ describe("point and line", () => {
     expect(pointOnLineSegment(pointFrom(0, 1), s)).toBe(false);
     expect(pointOnLineSegment(pointFrom(1, 1), s, 0)).toBe(true);
     expect(pointOnLineSegment(pointFrom(2, 1), s)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  const rectangleAt = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    angle: Radians = 0 as Radians,
+  ): ExcalidrawRectangleElement =>
+    ({
+      type: "rectangle",
+      x,
+      y,
+      width,
+      height,
+      angle,
+    } as ExcalidrawRectangleElement);
+
+  it("rotated rectangle includes its visual center", () => {
+    const x = 100;
+    const y = 50;
+    const width = 80;
+    const height = 40;
+    const shape = getPolygonShape(
+      rectangleAt(x, y, width, height, (Math.PI / 4) as Radians),
+    );
+
+    expect(shape.type).toBe("polygon");
+    if (shape.type === "polygon") {
+      expect(
+        polygonIncludesPoint(
+          pointFrom(x + width / 2, y + height / 2),
+          shape.data,
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("unrotated rectangle includes its center", () => {
+    const x = 10;
+    const y = 20;
+    const width = 60;
+    const height = 30;
+    const shape = getPolygonShape(rectangleAt(x, y, width, height));
+
+    expect(shape.type).toBe("polygon");
+    if (shape.type === "polygon") {
+      expect(
+        polygonIncludesPoint(
+          pointFrom(x + width / 2, y + height / 2),
+          shape.data,
+        ),
+      ).toBe(true);
+    }
   });
 });
 
