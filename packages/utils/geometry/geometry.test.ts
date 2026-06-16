@@ -4,6 +4,7 @@ import type {
   Polygon,
   Radians,
 } from "@excalidraw/math";
+import type { ExcalidrawRectangleElement } from "@excalidraw/excalidraw/element/types";
 import {
   pointFrom,
   lineSegment,
@@ -13,7 +14,23 @@ import {
   polygonIncludesPoint,
   segmentsIntersectAt,
 } from "@excalidraw/math";
-import { pointInEllipse, pointOnEllipse, type Ellipse } from "./shape";
+import {
+  getPolygonShape,
+  pointInEllipse,
+  pointOnEllipse,
+  type Ellipse,
+} from "./shape";
+
+const makeRectangleElement = (
+  overrides: Partial<ExcalidrawRectangleElement> &
+    Pick<ExcalidrawRectangleElement, "x" | "y" | "width" | "height" | "angle">,
+): ExcalidrawRectangleElement =>
+  ({
+    type: "rectangle",
+    backgroundColor: "#1e1e1e",
+    fillStyle: "solid",
+    ...overrides,
+  } as ExcalidrawRectangleElement);
 
 describe("point and line", () => {
   // const l: Line<GlobalPoint> = line(point(1, 0), point(1, 2));
@@ -117,6 +134,52 @@ describe("point and ellipse", () => {
 
     expect(pointInEllipse(pointFrom(-1, 1), ellipse)).toBe(false);
     expect(pointInEllipse(pointFrom(-1.4, 0.8), ellipse)).toBe(false);
+  });
+});
+
+describe("getPolygonShape", () => {
+  it("includes visual center for rotated rectangle hit polygon", () => {
+    const element = makeRectangleElement({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      angle: (Math.PI / 4) as Radians,
+    });
+    const shape = getPolygonShape(element);
+
+    expect(shape.type).toBe("polygon");
+    if (shape.type !== "polygon") {
+      return;
+    }
+
+    const center = pointFrom(
+      element.x + element.width / 2,
+      element.y + element.height / 2,
+    );
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
+  });
+
+  it("includes visual center for unrotated rectangle hit polygon", () => {
+    const element = makeRectangleElement({
+      x: 0,
+      y: 0,
+      width: 100,
+      height: 50,
+      angle: 0 as Radians,
+    });
+    const shape = getPolygonShape(element);
+
+    expect(shape.type).toBe("polygon");
+    if (shape.type !== "polygon") {
+      return;
+    }
+
+    const center = pointFrom(
+      element.x + element.width / 2,
+      element.y + element.height / 2,
+    );
+    expect(polygonIncludesPoint(center, shape.data)).toBe(true);
   });
 });
 
